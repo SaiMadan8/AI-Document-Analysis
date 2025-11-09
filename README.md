@@ -1,4 +1,4 @@
-# DocuMind Intelligence
+# AI Documwnt Analysis
 
 AI-powered document analysis system built with AWS serverless architecture. Transforms documents into actionable insights in under 10 seconds.
 
