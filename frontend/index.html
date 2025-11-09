@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuMind Intelligence - AI Document Analysis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 800px; width: 100%; padding: 40px; }
+        h1 { color: #333; text-align: center; margin-bottom: 10px; font-size: 2.5em; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 1.1em; }
+        .upload-area { border: 3px dashed #667eea; border-radius: 15px; padding: 40px; text-align: center; margin-bottom: 30px; transition: all 0.3s ease; cursor: pointer; }
+        .upload-area:hover { border-color: #764ba2; background: #f8f9ff; }
+        .upload-area.dragover { background: #e8ecff; border-color: #5a67d8; }
+        #fileInput { display: none; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 40px; border-radius: 25px; font-size: 1.1em; cursor: pointer; transition: transform 0.2s; margin: 10px; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #result { margin-top: 30px; padding: 25px; background: #f8f9ff; border-radius: 15px; display: none; }
+        #result h2 { color: #333; margin-bottom: 15px; }
+        #analysisResult { white-space: pre-wrap; line-height: 1.8; color: #444; }
+        .loading { display: none; text-align: center; margin: 20px 0; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .file-info { background: #e8ecff; padding: 15px; border-radius: 10px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 DocuMind Intelligence</h1>
+        <p class="subtitle">AI-Powered Document Analysis in Seconds</p>
+        <div class="upload-area" id="uploadArea">
+            <h3>📄 Drop your document here or click to browse</h3>
+            <p style="color: #666; margin-top: 10px;">Supports .txt files</p>
+            <input type="file" id="fileInput" accept=".txt">
+        </div>
+        <div class="file-info" id="fileInfo" style="display: none;"></div>
+        <div style="text-align: center;">
+            <button class="btn" id="analyzeBtn" disabled>Analyze Document</button>
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #667eea;">Analyzing your document...</p>
+        </div>
+        <div id="result">
+            <h2>📊 Analysis Results</h2>
+            <div id="analysisResult"></div>
+        </div>
+    </div>
+    <script>
+        const API_ENDPOINT = 'YOUR_API_GATEWAY_URL_HERE';
+        let selectedFile = null;
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const fileInfo = document.getElementById('fileInfo');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => { e.preventDefault(); uploadArea.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (file && file.name.endsWith('.txt')) {
+                selectedFile = file;
+                fileInfo.innerHTML = `<strong>Selected:</strong> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                fileInfo.style.display = 'block';
+                analyzeBtn.disabled = false;
+            } else {
+                alert('Please select a .txt file');
+            }
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const fileContent = e.target.result;
+                analyzeBtn.disabled = true;
+                loading.style.display = 'block';
+                result.style.display = 'none';
+                try {
+                    const response = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file_content: fileContent, file_key: selectedFile.name })
+                    });
+                    const data = await response.json();
+                    document.getElementById('analysisResult').textContent = data.analysis || 'No analysis available';
+                    result.style.display = 'block';
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                } finally {
+                    loading.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                }
+            };
+            reader.readAsText(selectedFile);
+        });
+    </script>
+</body>
+</html>
