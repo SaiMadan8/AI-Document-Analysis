@@ -105,7 +105,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 Sai Madan
 - GitHub: @SaiMadan8
-- LinkedIn: Connect with me
+- LinkedIn: www.linkedin.com/in/saimadan8
 
 ## Acknowledgments
 
